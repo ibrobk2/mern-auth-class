@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const connectDB = require('../config/db');
 const User = require('../models/user');
 const { body, validationResult } = require('express-validator');
