@@ -5,6 +5,9 @@ const { sendVerificationEmail } = require('../utils/emailService');
 const { sendPasswordResetEmail } = require('../utils/emailService');
 const { generateOTP, hashOTP } = require('../utils/otpService');
 const { generateToken } = require('../utils/tokenService');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
     
 // Connect to the database
 connectDB();
@@ -33,10 +36,14 @@ const registerUser = async (req, res) => {
     // Save user to database
     await user.save();
 
-    // Send verification email
-    await sendVerificationEmail(user);
+    // Generate verification token
+    const verificationToken = generateToken({ userId: user._id, email: user.email });
+    
+    // Send verification email with proper parameters
+    await sendVerificationEmail(user.email, verificationToken);
 
     res.status(201).json({ message: 'User registered successfully. Please verify your email.' });
+
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Server error' });
@@ -108,10 +115,36 @@ const deleteUser = async (req, res) => {
   }
 }
 
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { sendVerificationEmail } = require('../utils/emailService'); 
-const { generateToken } = require('../utils/tokenService');
+const verifyEmail = async (req, res) => {
+  const { token } = req.params;
+  try {
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    // Update user email verification status
+    user.isVerified = true;
+    await user.save();
+    res.status(200).json({ message: 'Email verified successfully' });
+    console.log('Email verification successful for user:', user.email);
+
+
+  } catch (error) {
+    console.error('Email verification error:', error);
+    if (error.name === 'TokenExpiredError') {
+      return res.status(400).json({ message: 'Token expired' });
+    }
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(400).json({ message: 'Invalid token' });
+    }
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+// const { sendVerificationEmail } = require('../utils/emailService'); 
+// const { generateToken } = require('../utils/tokenService');
 
 
 
@@ -120,6 +153,6 @@ module.exports = {
   loginUser,
     getUserProfile,
     updateUserProfile,
-    deleteUser
+    deleteUser,
+    verifyEmail,
     };
-
