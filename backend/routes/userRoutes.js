@@ -14,6 +14,6 @@ router.get('/profile', getUserProfile);
 router.put('/profile', updateUserProfile);
 // Delete user route
 router.delete('/profile', deleteUser);
-router.get('/auth/verify-email/:token', verifyEmail);
+router.get('/auth/verify-email', verifyEmail);
     
 module.exports = router;

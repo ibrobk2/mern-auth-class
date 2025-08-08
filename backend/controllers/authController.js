@@ -116,7 +116,7 @@ const deleteUser = async (req, res) => {
 }
 
 const verifyEmail = async (req, res) => {
-  const { token } = req.params;
+  const { token } = req.query;
   try {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
