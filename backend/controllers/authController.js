@@ -54,17 +54,21 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.error('Validation error:', errors.array());
     return res.status(400).json({ errors: errors.array() });
     }
     try {
     // Find user by email
     const user = await User.findOne({ email }).select('+password');
     if (!user) {    
-      return res.status(400).json({ message: 'Invalid email or password' });
+      console.error('User not found:', email);
+      return res.status(400).json({ message: 'User not found' });
+
     }   
     // Check if password matches
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.error('Password mismatch for user:', email);
       return res.status(400).json({ message: 'Invalid email or password' });
     }
     // Generate JWT token
@@ -74,6 +78,8 @@ const loginUser = async (req, res) => {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Server error' });
   }
+  return res.status(200).json({ message: 'Login successful' });
+
 }
 
 const getUserProfile = async (req, res) => {
