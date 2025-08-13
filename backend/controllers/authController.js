@@ -31,10 +31,10 @@ const registerUser = async (req, res) => {
 
     // Create new user
     user = new User({ name, email, password });
-    user.password = await bcrypt.hash(password, 10);
     
-    // Save user to database
+    // Save user to database (password will be hashed by pre-save middleware)
     await user.save();
+
 
     // Generate verification token
     const verificationToken = generateToken({ userId: user._id, email: user.email });
@@ -69,11 +69,11 @@ const loginUser = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       console.error('Password mismatch for user:', email);
-      return res.status(400).json({ message: 'Invalid email or password' });
+      return res.status(400).json({ message: 'Invalid password entered' });
     }
     // Generate JWT token
-    const token = generateToken(user._id);
-    res.status(200).json({ token, user: { id: user._id, name: user.name, email: user.email } });
+    const token = generateToken({id:user._id});
+    res.status(200).json({ token, user: { id: user._id, name: user.name, email: user.email, password: user.password } });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Server error' });

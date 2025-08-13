@@ -2,6 +2,8 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 const { EMAIL_USER, EMAIL_PASS } = process.env;
+
+//creating nodemailer transporter
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || 'mail.esystems.com.ng',
     port: process.env.EMAIL_PORT || 465,
@@ -13,7 +15,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendVerificationEmail = async (email, token) => {
-  const verificationUrl = `http://localhost:3000/api/users/auth/verify-email?token=${token}`;
+  const verificationUrl = `http://localhost:3000/api/verify-email?token=${token}`;
   const mailOptions = {
     from: `"E-Systems" <${EMAIL_USER}>`,
     to: email,
